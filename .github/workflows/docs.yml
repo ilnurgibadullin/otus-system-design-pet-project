@@ -1,0 +1,40 @@
+name: Build & Publish AsciiDoc
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build HTML
+        uses: docker://asciidoctor/docker-asciidoctor
+        with:
+          args: asciidoctor architecture-decision.adoc
+
+      - name: Build PDF
+        uses: docker://asciidoctor/docker-asciidoctor
+        with:
+          args: asciidoctor-pdf architecture-decision.adoc
+
+      - name: Prepare Pages content
+        run: |
+          mkdir -p public/doc/images
+          mv ./doc/images public/doc
+          mv architecture-decision.html public/index.html
+          mv architecture-decision.pdf public/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public

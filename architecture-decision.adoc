@@ -1,0 +1,62 @@
+= Архитектурное решение "Системы управления системами проектирования"
+:doctype: book
+:toc-title: Содержание
+:chapter-signifier: Глава
+:toc: left
+:toclevels: 3
+:icons: font
+:imagesdir: ./doc/images
+:sectnums:
+:sectnumlevels: 3
+
+== Требования
+
+include::./doc/1.01. Функциональные требования.adoc[]
+
+include::./doc/1.02. Нефункциональные требования.adoc[]
+
+include::./doc/1.03. Риски.adoc[]
+
+== Концептуальная архитектура
+
+include::./doc/2.01 Схема концептуальной архитектуры.adoc[]
+
+include::./doc/2.02 Описание концептуальной архитектуры.adoc[]
+
+include::./doc/2.03 Пользователи решения.adoc[]
+
+include::./doc/2.04 Внешние интеграции.adoc[]
+
+include::./doc/2.05 Потоки данных и высокоуровневое взаимодействие.adoc[]
+
+include::./doc/2.06 Модель данных.adoc[]
+
+include::./doc/2.07 Расчеты показателей решения.adoc[]
+
+include::./doc/2.08 Схема архитектуры решения.adoc[]
+
+include::./doc/2.09 Observability.adoc[]
+
+include::./doc/2.10 Реагирование на инциденты.adoc[]
+
+include::./doc/2.11 Схема взаимодействия.adoc[]
+
+include::./doc/2.12 Форматы взаимодействия.adoc[]
+
+include::./doc/2.13 Система хранения данных.adoc[]
+
+include::./doc/2.14 Схемы данных.adoc[]
+
+== Безопасность
+
+include::./doc/3.01 Схема защиты и управления доступом.adoc[]
+
+include::./doc/3.02 Аудит безопасности.adoc[]
+
+== Доставка решения
+
+include::./doc/4.01 Схема развертывания.adoc[]
+
+include::./doc/4.02 CICD процесс.adoc[]
+
+include::./doc/4.03 Планы тестирования.adoc[]

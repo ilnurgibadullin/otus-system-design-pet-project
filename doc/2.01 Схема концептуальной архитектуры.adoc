@@ -1,0 +1,5 @@
+=== Схема концептуальной архитектуры
+
+ifndef::imagesdir[:imagesdir: {docdir}/images]
+
+image::hla.png[]
