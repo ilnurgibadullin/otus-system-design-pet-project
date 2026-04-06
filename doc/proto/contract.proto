@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package adservice;
+option java_package = "com.adservice";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service AdService {
+  rpc ListAds(ListAdsRequest) returns (ListAdsResponse);
+  rpc GetAd(GetAdRequest) returns (Ad);
+  rpc CreateAd(CreateAdRequest) returns (Ad);
+  rpc UpdateAd(UpdateAdRequest) returns (Ad);
+  rpc DeleteAd(DeleteAdRequest) returns (google.protobuf.Empty);
+  rpc CreateUser(CreateUserRequest) returns (User);
+  rpc GetUserMe(GetUserRequest) returns (User);
+}
+
+message Ad {
+  int64 id = 1;
+  string title = 2;
+  string description = 3;
+  float price = 4;
+  int64 author_id = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message ListAdsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  string search = 3;
+}
+
+message ListAdsResponse {
+  int32 total = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  repeated Ad ads = 4;
+}
+
+message GetAdRequest {
+  int64 id = 1;
+}
+
+message CreateAdRequest {
+  string title = 1;
+  string description = 2;
+  float price = 3;
+}
+
+message UpdateAdRequest {
+  int64 id = 1;
+  string title = 2;
+  string description = 3;
+  float price = 4;
+}
+
+message DeleteAdRequest {
+  int64 id = 1;
+}
+
+message User {
+  int64 id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string phone = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message CreateUserRequest {
+  string email = 1;
+  string password = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string phone = 5;
+}
+
+message GetUserRequest {
+}
