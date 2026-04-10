@@ -1,0 +1,83 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: Install PostgreSQL and dependencies
+  apt:
+    name:
+      - postgresql-{{ postgresql_version }}
+      - postgresql-client-{{ postgresql_version }}
+      - postgresql-contrib-{{ postgresql_version }}
+      - python3-psycopg2
+    state: present
+  become: yes
+
+- name: Ensure PostgreSQL service is running
+  systemd:
+    name: postgresql
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Set PostgreSQL admin password
+  postgresql_query:
+    login_unix_socket: /var/run/postgresql
+    login_user: postgres
+    query: ALTER USER postgres WITH PASSWORD '{{ db_admin_password }}'
+  become: yes
+  become_user: postgres
+
+- name: Create PostgreSQL user
+  postgresql_user:
+    login_unix_socket: /var/run/postgresql
+    login_user: postgres
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    encrypted: yes
+    state: present
+  become: yes
+  become_user: postgres
+
+- name: Create PostgreSQL database
+  postgresql_db:
+    login_unix_socket: /var/run/postgresql
+    login_user: postgres
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+    encoding: "{{ postgresql_encoding }}"
+    lc_collate: "{{ postgresql_locale }}"
+    lc_ctype: "{{ postgresql_locale }}"
+    state: present
+  become: yes
+  become_user: postgres
+
+- name: Configure pg_hba.conf
+  template:
+    src: pg_hba.conf.j2
+    dest: /etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: '0640'
+  become: yes
+  notify: restart postgresql
+
+- name: Configure PostgreSQL settings
+  template:
+    src: postgresql.conf.j2
+    dest: /etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
+    owner: postgres
+    group: postgres
+    mode: '0644'
+  become: yes
+  notify: restart postgresql
+
+- name: Allow connections from app servers
+  lineinfile:
+    path: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
+    line: "host    {{ db_name }}    {{ db_user }}    {{ hostvars[item]['ansible_default_ipv4']['address'] }}/32    md5"
+    insertafter: EOF
+  loop: "{{ groups['app_servers'] }}"
+  become: yes
+  notify: restart postgresql

@@ -1,0 +1,136 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adservice-app
+  namespace: adservice
+  labels:
+    app: adservice
+    version: v1.0.0
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: adservice
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: adservice
+        tier: backend
+        version: v1.0.0
+    spec:
+      containers:
+        - name: adservice
+          image: your-registry/adservice:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+
+          # Environment variables
+          envFrom:
+            - configMapRef:
+                name: adservice-config
+            - secretRef:
+                name: adservice-secrets
+
+          # Individual environment variables
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          # Resource limits and requests
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          # Health checks
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Startup probe (for slow-starting applications)
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+
+          # Volume mounts
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: uploads
+              mountPath: /app/uploads
+              subPath: uploads
+
+      # Volumes
+      volumes:
+        - name: logs
+          emptyDir: {}
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: adservice-uploads-pvc
+
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+
+      # Image pull secrets (if using private registry)
+      # imagePullSecrets:
+      # - name: regcred
+
+      # Node selection (optional)
+      # nodeSelector:
+      #   kubernetes.io/os: linux
+
+      # Tolerations (optional)
+      # tolerations:
+      # - key: "dedicated"
+      #   operator: "Equal"
+      #   value: "adservice"
+      #   effect: "NoSchedule"

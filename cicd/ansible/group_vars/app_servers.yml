@@ -1,0 +1,13 @@
+---
+# Переменные для app серверов
+app_docker_compose_version: "2.20.0"
+nodejs_version: "18.x"
+
+# Docker Compose конфигурация
+docker_compose_project_name: "{{ project_name }}_{{ environment }}"
+app_container_name: "{{ project_name }}-app"
+nginx_container_name: "{{ project_name }}-nginx"
+
+# Health check
+health_check_timeout: 30
+health_check_interval: 5

@@ -1,0 +1,17 @@
+---
+# Переменные для DB серверов
+postgresql_version: 14
+postgresql_encoding: 'UTF8'
+postgresql_locale: 'en_US.UTF-8'
+
+# База данных
+db_name: adservice_db
+db_user: adservice_user
+db_host: "{{ hostvars[groups['db_servers'][0]]['ansible_default_ipv4']['address'] }}"
+
+# Настройки производительности
+postgresql_max_connections: 200
+postgresql_shared_buffers: "256MB"
+postgresql_effective_cache_size: "1GB"
+postgresql_work_mem: "4MB"
+postgresql_maintenance_work_mem: "64MB"
