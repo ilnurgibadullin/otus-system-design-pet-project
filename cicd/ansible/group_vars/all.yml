@@ -1,0 +1,26 @@
+---
+# Общие переменные
+project_name: adservice
+environment: dev
+
+# Docker
+docker_users:
+  - ubuntu
+
+# Системные настройки
+system_packages:
+  - curl
+  - wget
+  - vim
+  - htop
+  - net-tools
+  - git
+  - unzip
+
+# Приложение
+app_port: 3000
+app_domain: "{{ inventory_hostname }}"
+
+# Nginx
+nginx_port: 80
+ssl_enabled: false

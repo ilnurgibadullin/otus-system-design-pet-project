@@ -1,0 +1,116 @@
+---
+- name: Include secrets
+  include_vars: ../../vars/secrets.yml
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: Install NodeSource Node.js repository
+  shell: |
+    curl -fsSL https://deb.nodesource.com/setup_{{ nodejs_version }} | sudo -E bash -
+  args:
+    executable: /bin/bash
+  become: yes
+
+- name: Install Node.js and npm
+  apt:
+    name:
+      - nodejs
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Install PM2 globally
+  npm:
+    name: pm2
+    global: yes
+    state: present
+  become: yes
+
+- name: Create application directory
+  file:
+    path: "/opt/{{ project_name }}"
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Copy application files
+  copy:
+    src: "{{ playbook_dir }}/../../"
+    dest: "/opt/{{ project_name }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+    exclude:
+      - ".git"
+      - "node_modules"
+      - "*.log"
+      - ".env"
+
+- name: Install application dependencies
+  npm:
+    path: "/opt/{{ project_name }}"
+    state: present
+  become: yes
+  become_user: ubuntu
+
+- name: Create environment file
+  template:
+    src: app.env.j2
+    dest: "/opt/{{ project_name }}/.env"
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
+- name: Create health check script
+  copy:
+    src: health-check.sh
+    dest: "/opt/{{ project_name }}/health-check.sh"
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Create Docker Compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: "/opt/{{ project_name }}/docker-compose.yml"
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
+- name: Create Nginx configuration
+  template:
+    src: nginx.conf.j2
+    dest: "/opt/{{ project_name }}/nginx.conf"
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+
+- name: Build and start application with Docker Compose
+  community.docker.docker_compose:
+    project_src: "/opt/{{ project_name }}"
+    project_name: "{{ docker_compose_project_name }}"
+    state: present
+    restarted: yes
+  become: yes
+
+- name: Wait for application to be healthy
+  uri:
+    url: "http://localhost:{{ app_port }}/health"
+    method: GET
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: "{{ (health_check_timeout / health_check_interval) | int }}"
+  delay: "{{ health_check_interval }}"
+  ignore_errors: yes
+
+- name: Check application health
+  assert:
+    that:
+      - result.status == 200
+    fail_msg: "Application failed to start properly"
+    success_msg: "Application is running successfully"
