@@ -20,7 +20,7 @@ message Ad {
   int64 id = 1;
   string title = 2;
   string description = 3;
-  float price = 4;
+  int64 price = 4;
   int64 author_id = 5;
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;
@@ -46,14 +46,14 @@ message GetAdRequest {
 message CreateAdRequest {
   string title = 1;
   string description = 2;
-  float price = 3;
+  int64 price = 3;
 }
 
 message UpdateAdRequest {
   int64 id = 1;
   string title = 2;
   string description = 3;
-  float price = 4;
+  int64 price = 4;
 }
 
 message DeleteAdRequest {
